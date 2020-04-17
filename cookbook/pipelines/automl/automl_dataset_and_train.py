@@ -18,6 +18,7 @@ import kfp.gcp as gcp
 
 DATASET_OP = 'dataset'
 MODEL_OP = 'model'
+DEPLOY_OP = 'deploy'
 
 @dsl.pipeline(
   name='automl1',
@@ -34,7 +35,7 @@ def automl1(  #pylint: disable=unused-argument
 
   dataset = dsl.ContainerOp(
       name='dataset',
-      image='gcr.io/google-samples/automl-pipeline',
+      image='gcr.io/ml-ops-jg-2/automl-pipeline',
       arguments=["--project_id", project_id, "--operation", DATASET_OP,
           "--compute_region", compute_region,
           "--dataset_name", dataset_name,
@@ -45,7 +46,7 @@ def automl1(  #pylint: disable=unused-argument
 
   model = dsl.ContainerOp(
       name='model',
-      image='gcr.io/google-samples/automl-pipeline',
+      image='gcr.io/ml-ops-jg-2/automl-pipeline',
       arguments=["--project_id", project_id, "--operation", MODEL_OP,
           "--compute_region", compute_region,
           "--model_name", model_name,
@@ -54,6 +55,17 @@ def automl1(  #pylint: disable=unused-argument
       ).apply(gcp.use_gcp_secret('user-gcp-sa'))
 
   model.after(dataset)
+
+  deploy = dsl.ContainerOp(
+      name='deploy',
+      image='gcr.io/ml-ops-jg-2/automl-pipeline',
+      arguments=["--project_id", project_id, "--operation", MODEL_OP,
+          "--compute_region", compute_region,
+          "--model_name", model_name,
+          "--csv_path", dataset.outputs['csv_path']]
+      ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+
+  deploy.after(model)
 
 
 

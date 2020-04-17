@@ -28,6 +28,7 @@ from google.cloud import automl  #pylint: disable=no-name-in-module
 
 DATASET_OP = 'dataset'
 MODEL_OP = 'model'
+DEPLOY_OP = 'deploy'
 
 
 def create_dataset(project_id, compute_region, dataset_name, multilabel=False):
@@ -120,6 +121,25 @@ def create_model(project_id, compute_region, dataset_id, model_name, train_budge
   return opname, result
 
 
+def deploy_model(project_id, compute_region, model_name):
+  """Deploy a model."""
+
+  client = automl.AutoMlClient()
+
+  # A resource that represents Google Cloud Platform location.
+  name = client.model_path(project_id, compute_region, model_name)
+
+  # Deploy a model in the region.
+  operation = client.deploy_model(name)
+  opname = operation.operation.name
+  print("Deployment operation name: {}".format(opname))
+  print("Deployment started, waiting for result...")
+  result = operation.result()  # do synchronous wait in this case. TODO: timeouts/deadlines?
+  print('result:')
+  print(result)
+  return opname, result
+
+
 def main():
   parser = argparse.ArgumentParser(description='AutoML')
   parser.add_argument(
@@ -197,6 +217,20 @@ def main():
       _, result = create_model(args.project_id, args.compute_region, args.dataset_id,
           args.model_name, train_budget=args.train_budget)
       logging.info("model training complete.")
+      model_realname = result.name
+      model_realname = model_realname.split('/')[-1] # grab just the model id
+      logging.info("model 'real' name: %s", model_realname)
+
+    elif args.operation == DEPLOY_OP:
+      # deploy a model given the model_name
+      # required args: project_id, compute_region, model_name
+      if not args.model_name:
+        logging.error('error: model name not provided.')
+        raise Exception('error: model name not provided.')
+
+      logging.info("starting model deployment...")
+      _, result = deploy_model(args.project_id, args.compute_region, args.model_name)
+      logging.info("model deployment complete.")
       model_realname = result.name
       model_realname = model_realname.split('/')[-1] # grab just the model id
       logging.info("model 'real' name: %s", model_realname)
