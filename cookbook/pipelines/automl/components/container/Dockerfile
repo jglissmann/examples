@@ -42,4 +42,4 @@ ADD build /ml
 
 ENV PATH $PATH:/tools/node/bin:/tools/google-cloud-sdk/bin
 
-ENTRYPOINT ["python", "/ml/dataset_model.py"]
+ENTRYPOINT ["python", "/ml/dataset_train/dataset_model.py"]

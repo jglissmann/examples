@@ -22,7 +22,7 @@ DEPLOY_OP = 'deploy'
 
 @dsl.pipeline(
   name='automl1',
-  description='Create AutoML dataset and train model'
+  description='Create AutoML dataset, train and deploy model'
 )
 def automl1(  #pylint: disable=unused-argument
   project_id='YOUR_PROJECT_HERE',
@@ -59,10 +59,9 @@ def automl1(  #pylint: disable=unused-argument
   deploy = dsl.ContainerOp(
       name='deploy',
       image='gcr.io/ml-ops-jg-2/automl-pipeline',
-      arguments=["--project_id", project_id, "--operation", MODEL_OP,
+      arguments=["--project_id", project_id, "--operation", DEPLOY_OP,
           "--compute_region", compute_region,
-          "--model_name", model_name,
-          "--csv_path", dataset.outputs['csv_path']]
+          "--model_name", model_name]
       ).apply(gcp.use_gcp_secret('user-gcp-sa'))
 
   deploy.after(model)
