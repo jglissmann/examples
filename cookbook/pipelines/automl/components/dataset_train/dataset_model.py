@@ -127,10 +127,10 @@ def deploy_model(project_id, compute_region, model_name):
   client = automl.AutoMlClient()
 
   # A resource that represents Google Cloud Platform location.
-  name = client.model_path(project_id, compute_region, model_name)
+  project_location = client.model_path(project_id, compute_region, model_name)
 
   # Deploy a model in the region.
-  operation = client.deploy_model(name)
+  operation = client.deploy_model(project_location)
   print("Deployment started, waiting for result...")
   result = operation.result()  # do synchronous wait in this case. TODO: timeouts/deadlines?
   print('result:')
