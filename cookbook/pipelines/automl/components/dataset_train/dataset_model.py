@@ -131,13 +131,11 @@ def deploy_model(project_id, compute_region, model_name):
 
   # Deploy a model in the region.
   operation = client.deploy_model(name)
-  opname = operation.operation.name
-  print("Deployment operation name: {}".format(opname))
   print("Deployment started, waiting for result...")
   result = operation.result()  # do synchronous wait in this case. TODO: timeouts/deadlines?
   print('result:')
   print(result)
-  return opname, result
+  return result
 
 
 def main():
@@ -231,9 +229,6 @@ def main():
       logging.info("starting model deployment...")
       _, result = deploy_model(args.project_id, args.compute_region, args.model_name)
       logging.info("model deployment complete.")
-      model_realname = result.name
-      model_realname = model_realname.split('/')[-1] # grab just the model id
-      logging.info("model 'real' name: %s", model_realname)
 
 
     else:
